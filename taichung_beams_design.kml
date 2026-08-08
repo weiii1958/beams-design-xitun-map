@@ -1,0 +1,597 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>台中 BEAMS DESIGN 7-11</name>
+    <description>從 emap.pcsc.com.tw 篩選 BEAMS DESIGN 門市</description>
+    <Folder><name>西屯區（33）</name>
+    <Placemark>
+      <name>7-11 原義（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區忠義街80號<br/>店號 265421<br/>(04)23173966<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.659515,24.161487,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 墩十九（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區大墩19街186號<br/>店號 265270<br/>(04)23102205<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.649828,24.159857,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 夏督（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區寧夏路170號<br/>店號 229377<br/>(04)23168687<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.661228,24.167314,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 宇順（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區福安路51號<br/>店號 233055<br/>(04)24631947<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.622514,24.181277,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 寧夏（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區寧夏路105號<br/>店號 264831<br/>(04)23178934<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.661342,24.166544,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 寶慶（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區逢甲里西屯路二段256巷8、10號1樓<br/>店號 112190<br/>(04)24529273<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.647366,24.170958,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 小滿（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區中工三路220之20號<br/>店號 233734<br/>(04)23588272<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.617211,24.17487,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 尚仁（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區上仁街139號<br/>店號 120168<br/>(04)24527497<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.6419,24.171687,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 廣環（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區環中路二段698號<br/>店號 199289<br/>(04)24524421<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.644256,24.195164,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 成科（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區成都路221、223號<br/>店號 230779<br/>(04)23162846<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.664737,24.169233,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 望景（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區科園三路1號1樓之1<br/>店號 229193<br/>(04)24638230<br/>06:00 ~ 23:59<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.603518,24.205388,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 東儷（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區臺灣大道四段1727號<br/>店號 261773<br/>(04)23590457<br/>07:00 ~ 23:00<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.601251,24.177949,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 正勤（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區黎明路三段539-3號.539-5號<br/>店號 273743<br/>(04)24524657<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.640091,24.186368,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 水湳（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區中清西二街139-1號<br/>店號 269168<br/>(04)22957458<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.664869,24.175706,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 港強（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區福科路295號一樓<br/>店號 113001<br/>(04)24632861<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.624704,24.181942,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 漢口（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區漢口路一段22.24號1樓<br/>店號 231934<br/>(04)23168186<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.656511,24.160151,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 甘肅（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區甘肅路二段22號<br/>店號 128553<br/>(04)23152941<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.656089,24.170386,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 百惠（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區台灣大道三段182號1.2樓<br/>店號 262639<br/>(04)23120872<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.646281,24.164784,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 福星（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區福星路580號<br/>店號 253299<br/>(04)24519553<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.646446,24.174995,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 福雅（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區福雅路338號<br/>店號 249809<br/>(04)24639859<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.624243,24.194005,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 秋紅谷（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區朝富路30號32號1樓<br/>店號 281593<br/>(04)22542731<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.637843,24.167246,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 科雅（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區福雅路571-1號<br/>店號 249795<br/>(04)24636793<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.626947,24.200743,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 航發（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區河南路二段242號<br/>店號 274274<br/>(04)24526841<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.650953,24.176215,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 華美（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區西屯路二段19號19之1號21號<br/>店號 275417<br/>(04)23143424<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.661328,24.163806,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 裕元（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區安和路168號<br/>店號 236630<br/>(04)24638940<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.625112,24.180509,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 豐慶（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區甘肅路一段196號及198號1樓<br/>店號 993498<br/>(04)23164548<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.657497,24.168242,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 逢善（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區逢甲路132、134號<br/>店號 258917<br/>(04)24523490<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.643123,24.178396,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 逢廣（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區文華路170號172號1樓<br/>店號 128690<br/>(04)24528846<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.646367,24.183628,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 逢德（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區青海路二段321號323號<br/>店號 236674<br/>(04)24518827<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.640902,24.173525,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 逢盛（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區福星路330號華夏巷東一弄22號1樓<br/>店號 957931<br/>(04)27064895<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.644902,24.180725,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 逢科（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區青海路二段556號<br/>店號 274838<br/>(04)24520126<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.635916,24.176258,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 金西屯（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區西屯路三段79-33號<br/>店號 251156<br/>(04)24521479<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.630119,24.18337,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 順和（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西屯區工業區三十八路135號<br/>店號 232915<br/>(04)23502995<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.588055,24.176417,0</coordinates></Point>
+    </Placemark>
+    </Folder>
+    <Folder><name>南屯區（16）</name>
+    <Placemark>
+      <name>7-11 上楓樹（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市南屯區中和里黎明路一段263號<br/>店號 273167<br/>(04)24702620<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.627521,24.118045,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 南屯（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市南屯區南屯路二段570號<br/>店號 294197<br/>(04)23891441<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.64168,24.138714,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 哈魚（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市南屯區環中路四段6號<br/>店號 210030<br/>(04)23899574<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.622853,24.148054,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 墩富（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市南屯區大墩路572號<br/>店號 201852<br/>(04)23207553<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.650017,24.1497,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 墩業（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市南屯區大墩路717-5號<br/>店號 148915<br/>(04)23275693<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.649588,24.153495,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 墩正（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市南屯區溝墘里大墩十一街330號1樓<br/>店號 980322<br/>(04)22510497<br/>24H<br/>BEAMS DESIGN專區]]></description>
+      <Point><coordinates>120.645321,24.148978,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 墩陽（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市南屯區大墩10街254號1樓<br/>店號 273488<br/>(04)23205217<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.647672,24.147873,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 惠宇（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市南屯區向上南路一段167之1號<br/>店號 285470<br/>(04)24739173<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.653574,24.144793,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 惠馨（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市南屯區大墩南路332.336號<br/>店號 182410<br/>(04)24735180<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.6502,24.132149,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 文豐（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市南屯區文心南五路ㄧ段319號<br/>店號 212209<br/>(04)24738232<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.644869,24.131851,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 新墩興（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市南屯區東興路二段98號1樓<br/>店號 931294<br/>(04)24712169<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.653157,24.138799,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 新春社（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市南屯區永春南路136號138號<br/>店號 953098<br/>(04)23802312<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.609041,24.138653,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 新豐功（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市南屯區豐樂里永春東路860號<br/>店號 996752<br/>(04)23862140<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.6412,24.134996,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 權旺（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市南屯區五權西路二段812號<br/>店號 182339<br/>(04)23806902<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.635444,24.143733,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 永春（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市南屯區永春東七路629號<br/>店號 231107<br/>(04)23893263<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.633374,24.141205,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 鑫權勝（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市南屯區五權西路二段882號<br/>店號 155038<br/>(04)23801953<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.633953,24.144691,0</coordinates></Point>
+    </Placemark>
+    </Folder>
+    <Folder><name>北屯區（28）</name>
+    <Placemark>
+      <name>7-11 健太（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區太原路三段1138號<br/>店號 275406<br/>(04)24367881<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.7213,24.162372,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 北庄（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區后庄北路221-1號<br/>店號 197021<br/>(04)24264497<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.666976,24.192222,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 后探（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區崇德十路二段361號<br/>店號 231510<br/>(04)24261779<br/>06:00 ~ 23:00<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.676041,24.193533,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 國校（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區國校巷16號<br/>店號 252610<br/>(04)22336256<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.690834,24.164878,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 大果（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區崇德十一路50號<br/>店號 243889<br/>(04)24229802<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.68875,24.189528,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 天星（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區東山路二段77之8、77之9、77之10號1樓<br/>店號 991159<br/>(04)24390965<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.746871,24.192411,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 富宇（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區建和路二段273.275號<br/>店號 184302<br/>(04)24367450<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.724543,24.174852,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 巨富（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區敦富路807號1樓<br/>店號 234807<br/>(04)24364099<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.707324,24.197366,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 庄鎂（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區庄美街19號1樓<br/>店號 258157<br/>(04)24265713<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.661768,24.191253,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 敦煌（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區敦化路一段473號1樓<br/>店號 901846<br/>(04)22925869<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.667941,24.187558,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 文河（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區文心路四段500號1樓<br/>店號 235615<br/>(04)22345302<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.68357,24.172023,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 昌平（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區昌平路一段70號<br/>店號 264934<br/>(04)22326743<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.692939,24.16814,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 景大和（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區景賢路191號<br/>店號 207388<br/>(04)24364416<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.722435,24.166609,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 景賢八（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區景賢八路228號1樓<br/>店號 236179<br/>(04)24362314<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.709856,24.165329,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 松強（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區松安里崇德六路一段47號<br/>店號 950295<br/>(04)22432398<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.694818,24.179798,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 松探（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區松竹五路一段325號<br/>店號 234690<br/>(04)24369434<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.709514,24.17479,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 松潭（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區軍功路二段183號1樓<br/>店號 277413<br/>(04)24392157<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.719513,24.180021,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 樂河（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區軍和街457號1樓和461號1樓2樓<br/>店號 252997<br/>(04)24390860<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.72479,24.177173,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 湧順（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區樹孝路666號<br/>店號 231668<br/>(04)24367340<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.72167,24.160161,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 瀋陽（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區瀋陽路一段104號1樓<br/>店號 131397<br/>(04)22911125<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.678623,24.174118,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 竹探（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區松竹路三段676-1號<br/>店號 250739<br/>(04)22993843<br/>06:00 ~ 23:59<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.673617,24.190316,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 萬寶（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區中清路二段567號一樓<br/>店號 996291<br/>(04)22959440<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.665649,24.182447,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 賢和（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區景賢路230號<br/>店號 180137<br/>(04)24360884<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.724534,24.166965,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 軍建（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區軍福十三路198號<br/>店號 284743<br/>(04)24367480<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.724403,24.172335,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 軍榮（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區軍榮一街90號1樓<br/>店號 209878<br/>(04)24390046<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.720654,24.179994,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 軍福（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區軍功路一段500號<br/>店號 111212<br/>(04)24376717<br/>24H<br/>BEAMS DESIGN專區]]></description>
+      <Point><coordinates>120.718802,24.17136,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 金格（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區松竹路一段965號1樓<br/>店號 167237<br/>(04)24368410<br/>24H<br/>BEAMS DESIGN專區]]></description>
+      <Point><coordinates>120.712005,24.18219,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 青河（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北屯區青島路三段155號1樓<br/>店號 991975<br/>(04)22362409<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.683348,24.168624,0</coordinates></Point>
+    </Placemark>
+    </Folder>
+    <Folder><name>西區（17）</name>
+    <Placemark>
+      <name>7-11 三中（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西區忠明路54-1號1樓、博館路231號233號235號237號1樓<br/>店號 214652<br/>(04)23146826<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.661106,24.158985,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 上誠（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西區向上路一段381號383號385號<br/>店號 293149<br/>(04)24739542<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.65544,24.146554,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 五權（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西區南屯路一段60號62號64號<br/>店號 217422<br/>(04)23759066<br/>06:00 ~ 23:59<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.665849,24.132374,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 台麗（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西區五權路119號1樓、中山路493號1樓<br/>店號 962715<br/>(04)22060119<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.672556,24.146965,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 吉龍（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西區吉龍里忠明南路410號1樓及五權七街200、202號1樓<br/>店號 158288<br/>(04)23754680<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.657075,24.135248,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 向美（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西區美村路一段302之1號302之7號<br/>店號 286738<br/>(04)23016027<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.661532,24.146253,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 大將作（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西區英才路410號<br/>店號 185958<br/>(04)23205843<br/>06:00 ~ 23:59<br/>BEAMS DESIGN專區]]></description>
+      <Point><coordinates>120.666275,24.152798,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 大莊園（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西區向上路一段15號1樓<br/>店號 277549<br/>(04)23019946<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.66914,24.146425,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 安龍（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西區五權路2-12號2-13號1樓<br/>店號 265306<br/>(04)23752146<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.668292,24.142356,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 市民（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西區公益路157號<br/>店號 238430<br/>(04)23020614<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.662807,24.150724,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 忠明義（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西區忠明南路16號16之1號18號1樓<br/>店號 240662<br/>(04)23269542<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.658681,24.15624,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 模範（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西區模範街34巷1號<br/>店號 912732<br/>(04)23024571<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.666726,24.149128,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 權大（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西區五權西路一段271號1樓2樓<br/>店號 216902<br/>(04)23780449<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.655534,24.13989,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 權美（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西區美村路一段736號<br/>店號 187079<br/>(04)23723672<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.661585,24.134218,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 益風（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西區精誠路107號<br/>店號 279648<br/>(04)23202817<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.655227,24.150492,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 美村（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西區美村路一段542號546號<br/>店號 285126<br/>(04)23762435<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.661504,24.139612,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 金典（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市西區健行路1046、1046-1、1046-2號1樓<br/>店號 940483<br/>(04)23265492<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.662996,24.156473,0</coordinates></Point>
+    </Placemark>
+    </Folder>
+    <Folder><name>北區（22）</name>
+    <Placemark>
+      <name>7-11 中醫五權（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北區學士路2號<br/>店號 196338<br/>(04)22331972<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.683183,24.153839,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 健勝（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北區健行路701號<br/>店號 252403<br/>(04)22082596<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.673531,24.159055,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 元保（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北區進化北路413號1樓<br/>店號 250902<br/>(04)22068717<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.676864,24.162966,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 合作（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北區自強一街1號<br/>店號 875093<br/>(04)23608343<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.697028,24.152888,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 奕美（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北區文莊里日興街180號1樓<br/>店號 293138<br/>(04)22068491<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.675547,24.150934,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 婷婷（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北區學士路67號69號1樓<br/>店號 281364<br/>(04)22081433<br/>06:00 ~ 01:00<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.681941,24.15468,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 學士（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北區學士路163號165號<br/>店號 253679<br/>(04)22038425<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.680789,24.158863,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 微笑（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北區育樂街66.68號一樓及夾層<br/>店號 285458<br/>(04)22368133<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.692219,24.157667,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 忠太（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北區太原路一段492號地下1層和忠明八街1號1樓<br/>店號 277527<br/>(04)22063209<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.670653,24.164784,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 忠權（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北區忠明路426號1樓<br/>店號 120939<br/>(04)22061836<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.669217,24.162878,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 新德化（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北區德化街660號<br/>店號 978617<br/>(04)22084550<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.664877,24.161485,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 新通豪（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北區漢口路三段101號<br/>店號 230539<br/>(04)22991400<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.669233,24.167002,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 旭日（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北區五權路272.274.276號與太平路221號<br/>店號 253428<br/>(04)22065223<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.67813,24.151398,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 淡溝（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北區淡溝里民權路361號1樓<br/>店號 110987<br/>(04)22065373<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.670283,24.15678,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 漢華（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北區漢口路五段60號62號66號1樓<br/>店號 283809<br/>(04)22355816<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.686677,24.166908,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 益華（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北區健行路49號1樓<br/>店號 261016<br/>(04)22301107<br/>24H<br/>BEAMS DESIGN專區]]></description>
+      <Point><coordinates>120.689043,24.158822,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 科博館（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北區淡溝里博館路92號1樓<br/>店號 165057<br/>(04)23268634<br/>06:00 ~ 23:59<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.666428,24.155586,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 篤行（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北區篤行路120號122號<br/>店號 148351<br/>(04)22015811<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.676212,24.148146,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 育樂（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北區雙十路二段62號1樓及育樂街92號1樓<br/>店號 259404<br/>(04)22365102<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.6911,24.158089,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 豐華（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北區崇德里進化北路148號1樓及榮華街121號1樓<br/>店號 250186<br/>(04)22378824<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.686487,24.163176,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 賴厝（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北區漢口路四段102號1樓.地下樓<br/>店號 263816<br/>(04)22994792<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.677556,24.166932,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>7-11 進合（BEAMS DESIGN）</name>
+      <description><![CDATA[台中市北區進化路328號<br/>店號 252517<br/>(04)23609986<br/>24H<br/>BEAMS DESIGN]]></description>
+      <Point><coordinates>120.694592,24.153478,0</coordinates></Point>
+    </Placemark>
+    </Folder>
+  </Document>
+</kml>

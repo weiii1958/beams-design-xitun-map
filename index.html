@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#00704a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>台中西屯｜7-11 BEAMS DESIGN</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root {
+      --ink: #14201a;
+      --muted: #5a6b62;
+      --line: #dde5e0;
+      --accent: #00704a;
+      --accent-2: #0b3d2e;
+      --soft: #e7f4ee;
+      --warn: #c45c26;
+      --panel: #ffffff;
+      --shadow: 0 10px 30px rgba(11, 61, 46, 0.16);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --sheet-peek: 42vh;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: "Avenir Next", "Noto Sans TC", "PingFang TC", "Helvetica Neue", sans-serif;
+      color: var(--ink);
+      background: #dfe8e2;
+      overflow: hidden;
+    }
+    #app {
+      height: 100%;
+      height: 100dvh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+    header {
+      z-index: 1000;
+      padding: calc(10px + var(--safe-top)) 14px 10px;
+      background: linear-gradient(120deg, #0b3d2e, #00704a 60%, #1f8f5f);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.02rem;
+      line-height: 1.25;
+      font-weight: 700;
+    }
+    header .sub {
+      margin: 2px 0 0;
+      font-size: 0.72rem;
+      opacity: 0.88;
+    }
+    .chip-row {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .chip {
+      appearance: none;
+      border: 1px solid rgba(255,255,255,0.35);
+      background: rgba(255,255,255,0.14);
+      color: #fff;
+      border-radius: 999px;
+      padding: 8px 11px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .chip:active { transform: scale(0.97); }
+    .stage {
+      position: relative;
+      min-height: 0;
+    }
+    #map {
+      position: absolute;
+      inset: 0;
+      background: #cfdcd4;
+    }
+    .fab {
+      position: absolute;
+      right: 14px;
+      bottom: calc(var(--sheet-peek) + 14px + var(--safe-bottom));
+      z-index: 900;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 0;
+      background: #fff;
+      color: var(--accent);
+      box-shadow: var(--shadow);
+      font-size: 1.25rem;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+    }
+    .sheet {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      z-index: 950;
+      height: var(--sheet-peek);
+      max-height: calc(100% - 48px);
+      background: var(--panel);
+      border-radius: 18px 18px 0 0;
+      box-shadow: 0 -8px 28px rgba(0,0,0,0.12);
+      display: flex;
+      flex-direction: column;
+      transition: height 0.22s ease;
+      padding-bottom: var(--safe-bottom);
+    }
+    .sheet.expanded { height: min(86vh, 100%); }
+    .grab {
+      flex: 0 0 auto;
+      padding: 10px 14px 6px;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .grab::before {
+      content: "";
+      display: block;
+      width: 42px;
+      height: 4px;
+      margin: 0 auto 8px;
+      border-radius: 999px;
+      background: #c9d4ce;
+    }
+    .grab .title {
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+    .grab .meta {
+      margin-top: 2px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .grab .meta strong { color: var(--accent); }
+    .filters {
+      display: grid;
+      grid-template-columns: 1fr 1.3fr;
+      gap: 8px;
+      padding: 0 12px 10px;
+      flex: 0 0 auto;
+    }
+    .filters select, .filters input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 11px 12px;
+      font-size: 16px; /* avoid iOS zoom */
+      background: #f7faf8;
+      color: var(--ink);
+    }
+    #list {
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 0 10px 12px;
+      flex: 1;
+      min-height: 0;
+    }
+    .card {
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      font: inherit;
+      color: inherit;
+    }
+    .card.active {
+      border-color: #8ec9ae;
+      background: var(--soft);
+    }
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .card h3 {
+      margin: 0;
+      font-size: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+    .badge {
+      font-size: 0.68rem;
+      background: var(--warn);
+      color: #fff;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+    .dist {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+    .addr, .tel {
+      margin: 4px 0 0;
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .nav-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .nav-row a {
+      display: block;
+      text-align: center;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 10px 8px;
+      border-radius: 11px;
+    }
+    .nav-row a.g {
+      background: var(--accent);
+      color: #fff;
+    }
+    .nav-row a.a {
+      background: #eef2f0;
+      color: var(--accent-2);
+    }
+    .leaflet-popup-content {
+      font-size: 0.88rem;
+      line-height: 1.45;
+      margin: 10px 12px;
+    }
+    .leaflet-popup-content a {
+      color: var(--accent);
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .user-dot {
+      background: #4285f4;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 0 6px rgba(66,133,244,0.25);
+    }
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 28px 12px;
+      font-size: 0.9rem;
+    }
+    @media (min-width: 900px) {
+      #app {
+        grid-template-columns: 400px 1fr;
+        grid-template-rows: auto 1fr;
+      }
+      header { grid-column: 1 / -1; }
+      .stage {
+        display: contents;
+      }
+      #map {
+        position: relative;
+        inset: auto;
+        height: 100%;
+      }
+      .sheet {
+        position: relative;
+        height: auto !important;
+        max-height: none;
+        border-radius: 0;
+        box-shadow: none;
+        border-right: 1px solid var(--line);
+        grid-row: 2;
+        grid-column: 1;
+      }
+      .fab {
+        position: fixed;
+        right: 22px;
+        bottom: calc(22px + var(--safe-bottom));
+      }
+      .grab::before { display: none; }
+      .filters { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <div>
+        <h1>7-11 × BEAMS DESIGN</h1>
+        <div class="sub">台中門市・預設西屯｜資料來源 emap.pcsc.com.tw</div>
+      </div>
+      <div class="chip-row">
+        <button type="button" class="chip" id="btnLocate">附近</button>
+        <button type="button" class="chip" id="btnExpand">列表</button>
+      </div>
+    </header>
+    <div class="stage">
+      <div id="map"></div>
+      <button type="button" class="fab" id="fabLocate" title="定位">◎</button>
+      <section class="sheet" id="sheet">
+        <div class="grab" id="grab">
+          <div class="title">門市列表</div>
+          <div class="meta">顯示 <strong id="count">0</strong> 家・點店名飛地圖・可開 Google／Apple 地圖</div>
+        </div>
+        <div class="filters">
+          <select id="district" aria-label="行政區"></select>
+          <input id="q" type="search" placeholder="搜店名／地址／店號" enterkeyhint="search" />
+        </div>
+        <div id="list"></div>
+      </section>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const STORES = [{"id": "265421", "name": "原義", "address": "台中市西屯區忠義街80號", "tel": "(04)23173966", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,13生鮮蔬菜,16美妝,15Mister Donut甜甜圈,19ibon,22現蒸地瓜,27K·Seren,29聖娜麵包,30不可思議咖啡,31博客來,36精品咖啡,37天素地蔬,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,80霹靂DVD,86OPEN Bar,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,93茶BAR(多元複合),A1所長茶葉蛋,A2黃金滷蛋,A8BEAMS DESIGN,B4超值酒藏,B6特選咖啡", "lat": 24.161487, "lng": 120.659515, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "265270", "name": "墩十九", "address": "台中市西屯區大墩19街186號", "tel": "(04)23102205", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,16美妝,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,27K·Seren,31博客來,36精品咖啡,37天素地蔬,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,33OPEN iECO循環杯,79精品威士忌咖啡,80霹靂DVD,83蒸食機,86OPEN Bar,90饗喫鍋,89自助微波,94EC自助取件,97ANKER,93茶BAR(多元複合),A2黃金滷蛋,A8BEAMS DESIGN,B2開心食堂,B6特選咖啡", "lat": 24.159857, "lng": 120.649828, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "229377", "name": "夏督", "address": "台中市西屯區寧夏路170號", "tel": "(04)23168687", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,19ibon,21現萃茶,22現蒸地瓜,31博客來,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,86OPEN Bar,90饗喫鍋,94EC自助取件,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.167314, "lng": 120.661228, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "233055", "name": "宇順", "address": "台中市西屯區福安路51號", "tel": "(04)24631947", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,22現蒸地瓜,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.181277, "lng": 120.622514, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "264831", "name": "寧夏", "address": "台中市西屯區寧夏路105號", "tel": "(04)23178934", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,19ibon,22現蒸地瓜,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.166544, "lng": 120.661342, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "112190", "name": "寶慶", "address": "台中市西屯區逢甲里西屯路二段256巷8、10號1樓", "tel": "(04)24529273", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,16美妝,19ibon,21現萃茶,22現蒸地瓜,24雪淋霜霜淇淋,27K·Seren,29聖娜麵包,31博客來,36精品咖啡,37天素地蔬,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,34CITY系列熱燕麥飲,33OPEN iECO循環杯,79精品威士忌咖啡,80霹靂DVD,83蒸食機,86OPEN Bar,90饗喫鍋,89自助微波,92現烤地瓜,91蒸玉米,94EC自助取件,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.170958, "lng": 120.647366, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "233734", "name": "小滿", "address": "台中市西屯區中工三路220之20號", "tel": "(04)23588272", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,16美妝,19ibon,22現蒸地瓜,27K·Seren,31博客來,36精品咖啡,82天素地蔬複合店,66冷凍交貨便,08寵物生活專區,80霹靂DVD,86OPEN Bar,90饗喫鍋,89自助微波,91蒸玉米,93茶BAR(多元複合),A8BEAMS DESIGN,B6特選咖啡", "lat": 24.17487, "lng": 120.617211, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "120168", "name": "尚仁", "address": "台中市西屯區上仁街139號", "tel": "(04)24527497", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,16美妝,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,27K·Seren,31博客來,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,79精品威士忌咖啡,80霹靂DVD,83蒸食機,90饗喫鍋,89自助微波,94EC自助取件,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.171687, "lng": 120.6419, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "199289", "name": "廣環", "address": "台中市西屯區環中路二段698號", "tel": "(04)24524421", "hours": "24H", "services": "01停車場,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,29聖娜麵包,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,90饗喫鍋,94EC自助取件,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.195164, "lng": 120.644256, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "230779", "name": "成科", "address": "台中市西屯區成都路221、223號", "tel": "(04)23162846", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,16美妝,19ibon,21現萃茶,22現蒸地瓜,27K·Seren,31博客來,36精品咖啡,38嚴選素材冷凍鮮物,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,86OPEN Bar,90饗喫鍋,94EC自助取件,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.169233, "lng": 120.664737, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "229193", "name": "望景", "address": "台中市西屯區科園三路1號1樓之1", "tel": "(04)24638230", "hours": "06:00 ~ 23:59", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,37天素地蔬,38嚴選素材冷凍鮮物,66冷凍交貨便,34CITY系列熱燕麥飲,90饗喫鍋,91蒸玉米,94EC自助取件,A1所長茶葉蛋,A8BEAMS DESIGN", "lat": 24.205388, "lng": 120.603518, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "261773", "name": "東儷", "address": "台中市西屯區臺灣大道四段1727號", "tel": "(04)23590457", "hours": "07:00 ~ 23:00", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,15Mister Donut甜甜圈,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,2821TOGO,36精品咖啡,37天素地蔬,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,33OPEN iECO循環杯,83蒸食機,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,A1所長茶葉蛋,A2黃金滷蛋,A8BEAMS DESIGN,B3精品秤重散糖,B6特選咖啡", "lat": 24.177949, "lng": 120.601251, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "273743", "name": "正勤", "address": "台中市西屯區黎明路三段539-3號.539-5號", "tel": "(04)24524657", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,21現萃茶,22現蒸地瓜,31博客來,36精品咖啡,38嚴選素材冷凍鮮物,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,90饗喫鍋,94EC自助取件,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.186368, "lng": 120.640091, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "269168", "name": "水湳", "address": "台中市西屯區中清西二街139-1號", "tel": "(04)22957458", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,12行動電源租賃,19ibon,22現蒸地瓜,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,90饗喫鍋,89自助微波,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.175706, "lng": 120.664869, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "113001", "name": "港強", "address": "台中市西屯區福科路295號一樓", "tel": "(04)24632861", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,16美妝,19ibon,21現萃茶,22現蒸地瓜,27K·Seren,31博客來,36精品咖啡,37天素地蔬,38嚴選素材冷凍鮮物,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,79精品威士忌咖啡,80霹靂DVD,83蒸食機,91蒸玉米,96瓜地馬拉豆,97ANKER,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.181942, "lng": 120.624704, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "231934", "name": "漢口", "address": "台中市西屯區漢口路一段22.24號1樓", "tel": "(04)23168186", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,16美妝,19ibon,21現萃茶,22現蒸地瓜,27K·Seren,31博客來,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,79精品威士忌咖啡,86OPEN Bar,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.160151, "lng": 120.656511, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "128553", "name": "甘肅", "address": "台中市西屯區甘肅路二段22號", "tel": "(04)23152941", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,16美妝,19ibon,21現萃茶,22現蒸地瓜,88酷聖石霜淇淋,27K·Seren,31博客來,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.170386, "lng": 120.656089, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "262639", "name": "百惠", "address": "台中市西屯區台灣大道三段182號1.2樓", "tel": "(04)23120872", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,21現萃茶,22現蒸地瓜,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,79精品威士忌咖啡,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.164784, "lng": 120.646281, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "253299", "name": "福星", "address": "台中市西屯區福星路580號", "tel": "(04)24519553", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,89自助微波,94EC自助取件,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.174995, "lng": 120.646446, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "249809", "name": "福雅", "address": "台中市西屯區福雅路338號", "tel": "(04)24639859", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,36精品咖啡,37天素地蔬,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,83蒸食機,89自助微波,91蒸玉米,94EC自助取件,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.194005, "lng": 120.624243, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "281593", "name": "秋紅谷", "address": "台中市西屯區朝富路30號32號1樓", "tel": "(04)22542731", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,31博客來,36精品咖啡,37天素地蔬,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,78拋棄式隱形眼鏡,79精品威士忌咖啡,90饗喫鍋,89自助微波,91蒸玉米,97ANKER,A2黃金滷蛋,A8BEAMS DESIGN,B2開心食堂,B6特選咖啡", "lat": 24.167246, "lng": 120.637843, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "249795", "name": "科雅", "address": "台中市西屯區福雅路571-1號", "tel": "(04)24636793", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,36精品咖啡,82天素地蔬複合店,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,83蒸食機,94EC自助取件,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.200743, "lng": 120.626947, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "274274", "name": "航發", "address": "台中市西屯區河南路二段242號", "tel": "(04)24526841", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),11千禧血壓站,12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,16美妝,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,27K·Seren,31博客來,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,79精品威士忌咖啡,80霹靂DVD,81哈燒,84gogoro,90饗喫鍋,89自助微波,94EC自助取件,97ANKER,A2黃金滷蛋,A8BEAMS DESIGN,B4超值酒藏,B6特選咖啡", "lat": 24.176215, "lng": 120.650953, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "275417", "name": "華美", "address": "台中市西屯區西屯路二段19號19之1號21號", "tel": "(04)23143424", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,21現萃茶,22現蒸地瓜,36精品咖啡,82天素地蔬複合店,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,83蒸食機,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.163806, "lng": 120.661328, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "236630", "name": "裕元", "address": "台中市西屯區安和路168號", "tel": "(04)24638940", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,21現萃茶,31博客來,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,97ANKER,A2黃金滷蛋,A8BEAMS DESIGN,B4超值酒藏,B6特選咖啡", "lat": 24.180509, "lng": 120.625112, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "993498", "name": "豐慶", "address": "台中市西屯區甘肅路一段196號及198號1樓", "tel": "(04)23164548", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,31博客來,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,79精品威士忌咖啡,80霹靂DVD,83蒸食機,90饗喫鍋,91蒸玉米,94EC自助取件,97ANKER,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.168242, "lng": 120.657497, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "258917", "name": "逢善", "address": "台中市西屯區逢甲路132、134號", "tel": "(04)24523490", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,36精品咖啡,37天素地蔬,66冷凍交貨便,08寵物生活專區,34CITY系列熱燕麥飲,80霹靂DVD,90饗喫鍋,89自助微波,94EC自助取件,96瓜地馬拉豆,A1所長茶葉蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.178396, "lng": 120.643123, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "128690", "name": "逢廣", "address": "台中市西屯區文華路170號172號1樓", "tel": "(04)24528846", "hours": "24H", "services": "02廁所,03ATM,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,19ibon,21現萃茶,22現蒸地瓜,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,90饗喫鍋,89自助微波,94EC自助取件,96瓜地馬拉豆,A1所長茶葉蛋,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.183628, "lng": 120.646367, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "236674", "name": "逢德", "address": "台中市西屯區青海路二段321號323號", "tel": "(04)24518827", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,07OPEN! STORE,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,13生鮮蔬菜,19ibon,22現蒸地瓜,36精品咖啡,37天素地蔬,82天素地蔬複合店,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,94EC自助取件,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.173525, "lng": 120.640902, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "957931", "name": "逢盛", "address": "台中市西屯區福星路330號華夏巷東一弄22號1樓", "tel": "(04)27064895", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,79精品威士忌咖啡,80霹靂DVD,89自助微波,A8BEAMS DESIGN,B4超值酒藏,B6特選咖啡", "lat": 24.180725, "lng": 120.644902, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "274838", "name": "逢科", "address": "台中市西屯區青海路二段556號", "tel": "(04)24520126", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,22現蒸地瓜,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,96瓜地馬拉豆,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.176258, "lng": 120.635916, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "251156", "name": "金西屯", "address": "台中市西屯區西屯路三段79-33號", "tel": "(04)24521479", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,13生鮮蔬菜,19ibon,31博客來,36精品咖啡,38嚴選素材冷凍鮮物,66冷凍交貨便,17甜點專櫃,79精品威士忌咖啡,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.18337, "lng": 120.630119, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "232915", "name": "順和", "address": "台中市西屯區工業區三十八路135號", "tel": "(04)23502995", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,16美妝,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,27K·Seren,31博客來,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,87Watts均一價59元,90饗喫鍋,89自助微波,97ANKER,A2黃金滷蛋,A8BEAMS DESIGN,B4超值酒藏,B6特選咖啡", "lat": 24.176417, "lng": 120.588055, "district": "西屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "285654", "name": "市鑫", "address": "台中市中區自由路二段9號1樓", "tel": "(04)22255056", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,13生鮮蔬菜,16美妝,15Mister Donut甜甜圈,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,27K·Seren,2821TOGO,30不可思議咖啡,31博客來,32糖果屋,36精品咖啡,37天素地蔬,82天素地蔬複合店,38嚴選素材冷凍鮮物,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,86OPEN Bar,90饗喫鍋,89自助微波,91蒸玉米,97ANKER,93茶BAR(多元複合),A2黃金滷蛋,A8BEAMS DESIGN,B2開心食堂,B6特選咖啡", "lat": 24.138506, "lng": 120.680436, "district": "中區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "265568", "name": "成興", "address": "台中市中區柳川里成功路271號1樓、興中街68號1樓", "tel": "(04)22258097", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,91蒸玉米,97ANKER,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.143778, "lng": 120.679362, "district": "中區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "274182", "name": "鑫中華", "address": "台中市中區中華路一段153.155號一樓157號一二樓", "tel": "(04)22294106", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,16美妝,19ibon,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,83蒸食機,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.145345, "lng": 120.67673, "district": "中區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "276513", "name": "鑫華新", "address": "台中市中區中華里中華路一段75號77號及民族路218號", "tel": "(04)22293905", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,21現萃茶,22現蒸地瓜,29聖娜麵包,36精品咖啡,66冷凍交貨便,17甜點專櫃,79精品威士忌咖啡,80霹靂DVD,89自助微波,91蒸玉米,A1所長茶葉蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.143739, "lng": 120.675056, "district": "中區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "196338", "name": "中醫五權", "address": "台中市北區學士路2號", "tel": "(04)22331972", "hours": "24H", "services": "05ibon WiFi,95藥商執照(快篩試劑),22現蒸地瓜,2821TOGO,36精品咖啡,37天素地蔬,39原賞熱壓土司,17甜點專櫃,83蒸食機,92現烤地瓜,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.153839, "lng": 120.683183, "district": "北區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "252403", "name": "健勝", "address": "台中市北區健行路701號", "tel": "(04)22082596", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,22現蒸地瓜,31博客來,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,83蒸食機,90饗喫鍋,96瓜地馬拉豆,A1所長茶葉蛋,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.159055, "lng": 120.673531, "district": "北區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "250902", "name": "元保", "address": "台中市北區進化北路413號1樓", "tel": "(04)22068717", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,16美妝,19ibon,22現蒸地瓜,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,79精品威士忌咖啡,83蒸食機,94EC自助取件,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.162966, "lng": 120.676864, "district": "北區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "875093", "name": "合作", "address": "台中市北區自強一街1號", "tel": "(04)23608343", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,22現蒸地瓜,29聖娜麵包,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,91蒸玉米,97ANKER,A2黃金滷蛋,A8BEAMS DESIGN,B4超值酒藏,B6特選咖啡", "lat": 24.152888, "lng": 120.697028, "district": "北區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "293138", "name": "奕美", "address": "台中市北區文莊里日興街180號1樓", "tel": "(04)22068491", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,79精品威士忌咖啡,80霹靂DVD,91蒸玉米,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.150934, "lng": 120.675547, "district": "北區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "281364", "name": "婷婷", "address": "台中市北區學士路67號69號1樓", "tel": "(04)22081433", "hours": "06:00 ~ 01:00", "services": "03ATM,04座位區,05ibon WiFi,07OPEN! STORE,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,24雪淋霜霜淇淋,31博客來,36精品咖啡,82天素地蔬複合店,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,83蒸食機,90饗喫鍋,91蒸玉米,97ANKER,A1所長茶葉蛋,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.15468, "lng": 120.681941, "district": "北區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "253679", "name": "學士", "address": "台中市北區學士路163號165號", "tel": "(04)22038425", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,31博客來,36精品咖啡,66冷凍交貨便,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,89自助微波,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.158863, "lng": 120.680789, "district": "北區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "285458", "name": "微笑", "address": "台中市北區育樂街66.68號一樓及夾層", "tel": "(04)22368133", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,13生鮮蔬菜,16美妝,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,27K·Seren,36精品咖啡,38嚴選素材冷凍鮮物,66冷凍交貨便,08寵物生活專區,17甜點專櫃,79精品威士忌咖啡,90饗喫鍋,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.157667, "lng": 120.692219, "district": "北區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "277527", "name": "忠太", "address": "台中市北區太原路一段492號地下1層和忠明八街1號1樓", "tel": "(04)22063209", "hours": "24H", "services": "03ATM,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,21現萃茶,22現蒸地瓜,36精品咖啡,66冷凍交貨便,17甜點專櫃,34CITY系列熱燕麥飲,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.164784, "lng": 120.670653, "district": "北區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "120939", "name": "忠權", "address": "台中市北區忠明路426號1樓", "tel": "(04)22061836", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,16美妝,19ibon,22現蒸地瓜,27K·Seren,31博客來,36精品咖啡,37天素地蔬,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,87Watts均一價59元,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,A1所長茶葉蛋,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.162878, "lng": 120.669217, "district": "北區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "978617", "name": "新德化", "address": "台中市北區德化街660號", "tel": "(04)22084550", "hours": "24H", "services": "03ATM,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,36精品咖啡,66冷凍交貨便,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.161485, "lng": 120.664877, "district": "北區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "230539", "name": "新通豪", "address": "台中市北區漢口路三段101號", "tel": "(04)22991400", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,19ibon,22現蒸地瓜,31博客來,36精品咖啡,66冷凍交貨便,33OPEN iECO循環杯,79精品威士忌咖啡,80霹靂DVD,86OPEN Bar,87Watts均一價59元,90饗喫鍋,91蒸玉米,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.167002, "lng": 120.669233, "district": "北區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "253428", "name": "旭日", "address": "台中市北區五權路272.274.276號與太平路221號", "tel": "(04)22065223", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,36精品咖啡,37天素地蔬,66冷凍交貨便,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,90饗喫鍋,A8BEAMS DESIGN,B4超值酒藏,B6特選咖啡", "lat": 24.151398, "lng": 120.67813, "district": "北區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "110987", "name": "淡溝", "address": "台中市北區淡溝里民權路361號1樓", "tel": "(04)22065373", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,07OPEN! STORE,95藥商執照(快篩試劑),11千禧血壓站,12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,19ibon,21現萃茶,22現蒸地瓜,31博客來,36精品咖啡,37天素地蔬,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,34CITY系列熱燕麥飲,33OPEN iECO循環杯,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,96瓜地馬拉豆,A2黃金滷蛋,A8BEAMS DESIGN,B4超值酒藏,B6特選咖啡", "lat": 24.15678, "lng": 120.670283, "district": "北區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "283809", "name": "漢華", "address": "台中市北區漢口路五段60號62號66號1樓", "tel": "(04)22355816", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,36精品咖啡,82天素地蔬複合店,66冷凍交貨便,17甜點專櫃,34CITY系列熱燕麥飲,33OPEN iECO循環杯,79精品威士忌咖啡,80霹靂DVD,94EC自助取件,A8BEAMS DESIGN,B4超值酒藏,B6特選咖啡", "lat": 24.166908, "lng": 120.686677, "district": "北區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "261016", "name": "益華", "address": "台中市北區健行路49號1樓", "tel": "(04)22301107", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,15Mister Donut甜甜圈,19ibon,22現蒸地瓜,36精品咖啡,37天素地蔬,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,90饗喫鍋,89自助微波,97ANKER,A2黃金滷蛋,A9BEAMS DESIGN專區,B6特選咖啡", "lat": 24.158822, "lng": 120.689043, "district": "北區", "city": "台中市", "beams_tags": ["BEAMS DESIGN專區"]}, {"id": "165057", "name": "科博館", "address": "台中市北區淡溝里博館路92號1樓", "tel": "(04)23268634", "hours": "06:00 ~ 23:59", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,22現蒸地瓜,31博客來,36精品咖啡,66冷凍交貨便,08寵物生活專區,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,89自助微波,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.155586, "lng": 120.666428, "district": "北區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "148351", "name": "篤行", "address": "台中市北區篤行路120號122號", "tel": "(04)22015811", "hours": "24H", "services": "02廁所,03ATM,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,22現蒸地瓜,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,97ANKER,A1所長茶葉蛋,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.148146, "lng": 120.676212, "district": "北區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "259404", "name": "育樂", "address": "台中市北區雙十路二段62號1樓及育樂街92號1樓", "tel": "(04)22365102", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,21現萃茶,22現蒸地瓜,31博客來,36精品咖啡,37天素地蔬,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,90饗喫鍋,89自助微波,96瓜地馬拉豆,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.158089, "lng": 120.6911, "district": "北區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "250186", "name": "豐華", "address": "台中市北區崇德里進化北路148號1樓及榮華街121號1樓", "tel": "(04)22378824", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,13生鮮蔬菜,19ibon,21現萃茶,22現蒸地瓜,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,96瓜地馬拉豆,97ANKER,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.163176, "lng": 120.686487, "district": "北區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "263816", "name": "賴厝", "address": "台中市北區漢口路四段102號1樓.地下樓", "tel": "(04)22994792", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,22現蒸地瓜,36精品咖啡,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,89自助微波,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.166932, "lng": 120.677556, "district": "北區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "252517", "name": "進合", "address": "台中市北區進化路328號", "tel": "(04)23609986", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,89自助微波,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.153478, "lng": 120.694592, "district": "北區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "275406", "name": "健太", "address": "台中市北屯區太原路三段1138號", "tel": "(04)24367881", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,19ibon,21現萃茶,22現蒸地瓜,24雪淋霜霜淇淋,31博客來,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,87Watts均一價59元,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,97ANKER,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.162372, "lng": 120.7213, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "197021", "name": "北庄", "address": "台中市北屯區后庄北路221-1號", "tel": "(04)24264497", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,31博客來,36精品咖啡,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,91蒸玉米,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.192222, "lng": 120.666976, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "231510", "name": "后探", "address": "台中市北屯區崇德十路二段361號", "tel": "(04)24261779", "hours": "06:00 ~ 23:00", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,16美妝,19ibon,21現萃茶,22現蒸地瓜,27K·Seren,31博客來,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,18高效智慧回收機,79精品威士忌咖啡,80霹靂DVD,85ionex,83蒸食機,94EC自助取件,A1所長茶葉蛋,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.193533, "lng": 120.676041, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "252610", "name": "國校", "address": "台中市北屯區國校巷16號", "tel": "(04)22336256", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,31博客來,36精品咖啡,82天素地蔬複合店,38嚴選素材冷凍鮮物,66冷凍交貨便,08寵物生活專區,17甜點專櫃,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,94EC自助取件,97ANKER,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.164878, "lng": 120.690834, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "243889", "name": "大果", "address": "台中市北屯區崇德十一路50號", "tel": "(04)24229802", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,27K·Seren,31博客來,36精品咖啡,37天素地蔬,82天素地蔬複合店,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,87Watts均一價59元,90饗喫鍋,89自助微波,91蒸玉米,96瓜地馬拉豆,A2黃金滷蛋,A8BEAMS DESIGN,B4超值酒藏,B6特選咖啡", "lat": 24.189528, "lng": 120.68875, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "991159", "name": "天星", "address": "台中市北屯區東山路二段77之8、77之9、77之10號1樓", "tel": "(04)24390965", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,31博客來,36精品咖啡,37天素地蔬,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,83蒸食機,86OPEN Bar,90饗喫鍋,91蒸玉米,94EC自助取件,A1所長茶葉蛋,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.192411, "lng": 120.746871, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "184302", "name": "富宇", "address": "台中市北屯區建和路二段273.275號", "tel": "(04)24367450", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,89自助微波,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.174852, "lng": 120.724543, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "234807", "name": "巨富", "address": "台中市北屯區敦富路807號1樓", "tel": "(04)24364099", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,22現蒸地瓜,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.197366, "lng": 120.707324, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "258157", "name": "庄鎂", "address": "台中市北屯區庄美街19號1樓", "tel": "(04)24265713", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,22現蒸地瓜,27K·Seren,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,80霹靂DVD,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,96瓜地馬拉豆,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.191253, "lng": 120.661768, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "901846", "name": "敦煌", "address": "台中市北屯區敦化路一段473號1樓", "tel": "(04)22925869", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,31博客來,36精品咖啡,66冷凍交貨便,08寵物生活專區,79精品威士忌咖啡,80霹靂DVD,91蒸玉米,94EC自助取件,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.187558, "lng": 120.667941, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "235615", "name": "文河", "address": "台中市北屯區文心路四段500號1樓", "tel": "(04)22345302", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,16美妝,19ibon,21現萃茶,22現蒸地瓜,24雪淋霜霜淇淋,27K·Seren,31博客來,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.172023, "lng": 120.68357, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "264934", "name": "昌平", "address": "台中市北屯區昌平路一段70號", "tel": "(04)22326743", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,13生鮮蔬菜,19ibon,22現蒸地瓜,31博客來,36精品咖啡,37天素地蔬,38嚴選素材冷凍鮮物,66冷凍交貨便,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,91蒸玉米,96瓜地馬拉豆,93茶BAR(多元複合),A1所長茶葉蛋,A2黃金滷蛋,A8BEAMS DESIGN,B4超值酒藏,B6特選咖啡", "lat": 24.16814, "lng": 120.692939, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "207388", "name": "景大和", "address": "台中市北屯區景賢路191號", "tel": "(04)24364416", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,16美妝,19ibon,27K·Seren,31博客來,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,A1所長茶葉蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.166609, "lng": 120.722435, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "236179", "name": "景賢八", "address": "台中市北屯區景賢八路228號1樓", "tel": "(04)24362314", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,16美妝,19ibon,22現蒸地瓜,27K·Seren,31博客來,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,91蒸玉米,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.165329, "lng": 120.709856, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "950295", "name": "松強", "address": "台中市北屯區松安里崇德六路一段47號", "tel": "(04)22432398", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,21現萃茶,22現蒸地瓜,31博客來,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,79精品威士忌咖啡,80霹靂DVD,83蒸食機,90饗喫鍋,91蒸玉米,94EC自助取件,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.179798, "lng": 120.694818, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "234690", "name": "松探", "address": "台中市北屯區松竹五路一段325號", "tel": "(04)24369434", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,36精品咖啡,82天素地蔬複合店,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,33OPEN iECO循環杯,79精品威士忌咖啡,90饗喫鍋,89自助微波,94EC自助取件,96瓜地馬拉豆,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.17479, "lng": 120.709514, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "277413", "name": "松潭", "address": "台中市北屯區軍功路二段183號1樓", "tel": "(04)24392157", "hours": "24H", "services": "01停車場,02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,31博客來,36精品咖啡,37天素地蔬,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,79精品威士忌咖啡,80霹靂DVD,83蒸食機,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,96瓜地馬拉豆,93茶BAR(多元複合),A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.180021, "lng": 120.719513, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "252997", "name": "樂河", "address": "台中市北屯區軍和街457號1樓和461號1樓2樓", "tel": "(04)24390860", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,21現萃茶,22現蒸地瓜,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,91蒸玉米,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.177173, "lng": 120.72479, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "231668", "name": "湧順", "address": "台中市北屯區樹孝路666號", "tel": "(04)24367340", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,21現萃茶,22現蒸地瓜,36精品咖啡,82天素地蔬複合店,66冷凍交貨便,08寵物生活專區,17甜點專櫃,79精品威士忌咖啡,80霹靂DVD,83蒸食機,90饗喫鍋,89自助微波,94EC自助取件,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.160161, "lng": 120.72167, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "131397", "name": "瀋陽", "address": "台中市北屯區瀋陽路一段104號1樓", "tel": "(04)22911125", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,13生鮮蔬菜,19ibon,21現萃茶,22現蒸地瓜,24雪淋霜霜淇淋,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,33OPEN iECO循環杯,79精品威士忌咖啡,80霹靂DVD,83蒸食機,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,96瓜地馬拉豆,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.174118, "lng": 120.678623, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "250739", "name": "竹探", "address": "台中市北屯區松竹路三段676-1號", "tel": "(04)22993843", "hours": "06:00 ~ 23:59", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,31博客來,36精品咖啡,38嚴選素材冷凍鮮物,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,34CITY系列熱燕麥飲,79精品威士忌咖啡,80霹靂DVD,86OPEN Bar,90饗喫鍋,89自助微波,96瓜地馬拉豆,93茶BAR(多元複合),A1所長茶葉蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.190316, "lng": 120.673617, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "996291", "name": "萬寶", "address": "台中市北屯區中清路二段567號一樓", "tel": "(04)22959440", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,33OPEN iECO循環杯,78拋棄式隱形眼鏡,80霹靂DVD,90饗喫鍋,89自助微波,94EC自助取件,A1所長茶葉蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.182447, "lng": 120.665649, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "180137", "name": "賢和", "address": "台中市北屯區景賢路230號", "tel": "(04)24360884", "hours": "24H", "services": "02廁所,03ATM,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,36精品咖啡,66冷凍交貨便,17甜點專櫃,79精品威士忌咖啡,80霹靂DVD,83蒸食機,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.166965, "lng": 120.724534, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "284743", "name": "軍建", "address": "台中市北屯區軍福十三路198號", "tel": "(04)24367480", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,31博客來,36精品咖啡,37天素地蔬,66冷凍交貨便,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,83蒸食機,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.172335, "lng": 120.724403, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "209878", "name": "軍榮", "address": "台中市北屯區軍榮一街90號1樓", "tel": "(04)24390046", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,91蒸玉米,94EC自助取件,A8BEAMS DESIGN,B4超值酒藏,B6特選咖啡", "lat": 24.179994, "lng": 120.720654, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "111212", "name": "軍福", "address": "台中市北屯區軍功路一段500號", "tel": "(04)24376717", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,22現蒸地瓜,31博客來,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,94EC自助取件,A1所長茶葉蛋,A9BEAMS DESIGN專區,B6特選咖啡", "lat": 24.17136, "lng": 120.718802, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN專區"]}, {"id": "167237", "name": "金格", "address": "台中市北屯區松竹路一段965號1樓", "tel": "(04)24368410", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,07OPEN! STORE,95藥商執照(快篩試劑),12行動電源租賃,19ibon,21現萃茶,22現蒸地瓜,25OPEN!兒童閱覽室,36精品咖啡,37天素地蔬,66冷凍交貨便,17甜點專櫃,79精品威士忌咖啡,80霹靂DVD,83蒸食機,90饗喫鍋,A2黃金滷蛋,A9BEAMS DESIGN專區,B6特選咖啡", "lat": 24.18219, "lng": 120.712005, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN專區"]}, {"id": "991975", "name": "青河", "address": "台中市北屯區青島路三段155號1樓", "tel": "(04)22362409", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,13生鮮蔬菜,16美妝,19ibon,22現蒸地瓜,27K·Seren,31博客來,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,94EC自助取件,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.168624, "lng": 120.683348, "district": "北屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "231174", "name": "京成", "address": "台中市南區學府路145號、台中市南區學府路147巷1、3、5、7號", "tel": "(04)22244386", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,16美妝,19ibon,21現萃茶,22現蒸地瓜,27K·Seren,31博客來,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,91蒸玉米,97ANKER,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.12903, "lng": 120.673893, "district": "南區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "286495", "name": "台火", "address": "台中市南區高工路355號1樓", "tel": "(04)22600615", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,36精品咖啡,37天素地蔬,82天素地蔬複合店,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,80霹靂DVD,83蒸食機,90饗喫鍋,A1所長茶葉蛋,A2黃金滷蛋,A8BEAMS DESIGN", "lat": 24.114345, "lng": 120.666578, "district": "南區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "275370", "name": "大東家", "address": "台中市南區新榮里復興路三段138、140號", "tel": "(04)22214273", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,22現蒸地瓜,31博客來,36精品咖啡,66冷凍交貨便,08寵物生活專區,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,A1所長茶葉蛋,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.130219, "lng": 120.673248, "district": "南區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "277136", "name": "宜寧", "address": "台中市南區東興路一段21號1樓", "tel": "(04)22605645", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,22現蒸地瓜,36精品咖啡,37天素地蔬,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,94EC自助取件,96瓜地馬拉豆,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.119224, "lng": 120.656764, "district": "南區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "195999", "name": "建丞", "address": "台中市南區建成路1683號1樓", "tel": "(04)22859838", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,36精品咖啡,37天素地蔬,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,83蒸食機,97ANKER,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.126199, "lng": 120.673746, "district": "南區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "279741", "name": "文慶", "address": "台中市南區大慶街一段243.245號", "tel": "(04)22658481", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,22現蒸地瓜,36精品咖啡,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.113369, "lng": 120.655502, "district": "南區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "181244", "name": "明興", "address": "台中市南區忠明南路929號", "tel": "(04)22654252", "hours": "06:00 ~ 23:59", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,22現蒸地瓜,36精品咖啡,66冷凍交貨便,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,89自助微波,A1所長茶葉蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.11925, "lng": 120.665503, "district": "南區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "229090", "name": "樹義", "address": "台中市南區福田三街156號1樓", "tel": "(04)22632372", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,22現蒸地瓜,31博客來,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.111105, "lng": 120.656082, "district": "南區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "281928", "name": "民主", "address": "台中市南區復興路三段320、322、324、326號", "tel": "(04)22234962", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),11千禧血壓站,12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,19ibon,22現蒸地瓜,31博客來,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,79精品威士忌咖啡,83蒸食機,90饗喫鍋,89自助微波,91蒸玉米,96瓜地馬拉豆,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.132462, "lng": 120.678677, "district": "南區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "241126", "name": "生活", "address": "台中市南區復興路二段71巷70號1樓及忠明南路730巷17號1樓", "tel": "(04)22603843", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,21現萃茶,22現蒸地瓜,31博客來,36精品咖啡,37天素地蔬,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,96瓜地馬拉豆,A1所長茶葉蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.123619, "lng": 120.658755, "district": "南區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "273352", "name": "福田", "address": "台中市南區文心南路883、885號1樓", "tel": "(04)22612900", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,13生鮮蔬菜,19ibon,21現萃茶,22現蒸地瓜,31博客來,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,84gogoro,90饗喫鍋,89自助微波,91蒸玉米,96瓜地馬拉豆,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.111143, "lng": 120.65913, "district": "南區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "263137", "name": "義興", "address": "台中市南區復興路一段128號", "tel": "(04)22602308", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,19ibon,21現萃茶,22現蒸地瓜,24雪淋霜霜淇淋,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,91蒸玉米,A2黃金滷蛋,A8BEAMS DESIGN,B1野獸國專櫃,B6特選咖啡", "lat": 24.112711, "lng": 120.652465, "district": "南區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "250577", "name": "聯信", "address": "台中市南區建成路1107號1樓", "tel": "(04)22853023", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,22現蒸地瓜,31博客來,36精品咖啡,66冷凍交貨便,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,94EC自助取件,96瓜地馬拉豆,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.128156, "lng": 120.682361, "district": "南區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "287166", "name": "興學", "address": "台中市南區積善里學府路2號", "tel": "(04)22857397", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.124678, "lng": 120.675345, "district": "南區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "249201", "name": "興福", "address": "台中市南區復興路二段175之1之2號", "tel": "(04)22608279", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,13生鮮蔬菜,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,31博客來,36精品咖啡,38嚴選素材冷凍鮮物,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,91蒸玉米,96瓜地馬拉豆,A2黃金滷蛋,A8BEAMS DESIGN,B4超值酒藏,B6特選咖啡", "lat": 24.127318, "lng": 120.66599, "district": "南區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "196774", "name": "超贊", "address": "台中市南區高工路202號1樓", "tel": "(04)22607922", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,89自助微波,91蒸玉米,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.113344, "lng": 120.663536, "district": "南區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "911290", "name": "頂橋", "address": "台中市南區興大路338號340號", "tel": "(04)22857908", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.118316, "lng": 120.671619, "district": "南區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "262891", "name": "高工", "address": "台中市南區高工路168號1樓", "tel": "(04)22634012", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,13生鮮蔬菜,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,31博客來,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,79精品威士忌咖啡,80霹靂DVD,89自助微波,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.113231, "lng": 120.66167, "district": "南區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "273167", "name": "上楓樹", "address": "台中市南屯區中和里黎明路一段263號", "tel": "(04)24702620", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,21現萃茶,22現蒸地瓜,24雪淋霜霜淇淋,29聖娜麵包,36精品咖啡,37天素地蔬,82天素地蔬複合店,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,84gogoro,91蒸玉米,96瓜地馬拉豆,A1所長茶葉蛋,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.118045, "lng": 120.627521, "district": "南屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "294197", "name": "南屯", "address": "台中市南屯區南屯路二段570號", "tel": "(04)23891441", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,21現萃茶,36精品咖啡,66冷凍交貨便,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,89自助微波,91蒸玉米,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.138714, "lng": 120.64168, "district": "南屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "210030", "name": "哈魚", "address": "台中市南屯區環中路四段6號", "tel": "(04)23899574", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,07OPEN! STORE,95藥商執照(快篩試劑),12行動電源租賃,19ibon,66冷凍交貨便,78拋棄式隱形眼鏡,80霹靂DVD,A8BEAMS DESIGN", "lat": 24.148054, "lng": 120.622853, "district": "南屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "201852", "name": "墩富", "address": "台中市南屯區大墩路572號", "tel": "(04)23207553", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,16美妝,19ibon,21現萃茶,22現蒸地瓜,24雪淋霜霜淇淋,31博客來,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,33OPEN iECO循環杯,79精品威士忌咖啡,83蒸食機,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,97ANKER,A8BEAMS DESIGN,B1野獸國專櫃,B6特選咖啡", "lat": 24.1497, "lng": 120.650017, "district": "南屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "148915", "name": "墩業", "address": "台中市南屯區大墩路717-5號", "tel": "(04)23275693", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,92現烤地瓜,A8BEAMS DESIGN,B4超值酒藏,B6特選咖啡", "lat": 24.153495, "lng": 120.649588, "district": "南屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "980322", "name": "墩正", "address": "台中市南屯區溝墘里大墩十一街330號1樓", "tel": "(04)22510497", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,31博客來,36精品咖啡,37天素地蔬,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,91蒸玉米,96瓜地馬拉豆,97ANKER,A2黃金滷蛋,A9BEAMS DESIGN專區,B6特選咖啡", "lat": 24.148978, "lng": 120.645321, "district": "南屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN專區"]}, {"id": "273488", "name": "墩陽", "address": "台中市南屯區大墩10街254號1樓", "tel": "(04)23205217", "hours": "24H", "services": "03ATM,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,13生鮮蔬菜,19ibon,22現蒸地瓜,36精品咖啡,37天素地蔬,66冷凍交貨便,17甜點專櫃,33OPEN iECO循環杯,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.147873, "lng": 120.647672, "district": "南屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "285470", "name": "惠宇", "address": "台中市南屯區向上南路一段167之1號", "tel": "(04)24739173", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,29聖娜麵包,36精品咖啡,37天素地蔬,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,92現烤地瓜,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.144793, "lng": 120.653574, "district": "南屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "182410", "name": "惠馨", "address": "台中市南屯區大墩南路332.336號", "tel": "(04)24735180", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,19ibon,22現蒸地瓜,31博客來,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,87Watts均一價59元,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,97ANKER,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.132149, "lng": 120.6502, "district": "南屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "212209", "name": "文豐", "address": "台中市南屯區文心南五路ㄧ段319號", "tel": "(04)24738232", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,13生鮮蔬菜,16美妝,19ibon,22現蒸地瓜,88酷聖石霜淇淋,27K·Seren,31博客來,32糖果屋,36精品咖啡,37天素地蔬,38嚴選素材冷凍鮮物,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,79精品威士忌咖啡,80霹靂DVD,86OPEN Bar,87Watts均一價59元,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,96瓜地馬拉豆,97ANKER,93茶BAR(多元複合),A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.131851, "lng": 120.644869, "district": "南屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "931294", "name": "新墩興", "address": "台中市南屯區東興路二段98號1樓", "tel": "(04)24712169", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),11千禧血壓站,12行動電源租賃,13生鮮蔬菜,16美妝,19ibon,22現蒸地瓜,27K·Seren,31博客來,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,34CITY系列熱燕麥飲,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,91蒸玉米,96瓜地馬拉豆,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.138799, "lng": 120.653157, "district": "南屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "953098", "name": "新春社", "address": "台中市南屯區永春南路136號138號", "tel": "(04)23802312", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,21現萃茶,22現蒸地瓜,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,18高效智慧回收機,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.138653, "lng": 120.609041, "district": "南屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "996752", "name": "新豐功", "address": "台中市南屯區豐樂里永春東路860號", "tel": "(04)23862140", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,36精品咖啡,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.134996, "lng": 120.6412, "district": "南屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "182339", "name": "權旺", "address": "台中市南屯區五權西路二段812號", "tel": "(04)23806902", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,21現萃茶,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,89自助微波,96瓜地馬拉豆,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.143733, "lng": 120.635444, "district": "南屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "231107", "name": "永春", "address": "台中市南屯區永春東七路629號", "tel": "(04)23893263", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,31博客來,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.141205, "lng": 120.633374, "district": "南屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "155038", "name": "鑫權勝", "address": "台中市南屯區五權西路二段882號", "tel": "(04)23801953", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,21現萃茶,22現蒸地瓜,24雪淋霜霜淇淋,36精品咖啡,66冷凍交貨便,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,97ANKER,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.144691, "lng": 120.633953, "district": "南屯區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "255088", "name": "修平", "address": "台中市大里區工業二路100號", "tel": "(04)24917541", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,16美妝,19ibon,21現萃茶,27K·Seren,36精品咖啡,37天素地蔬,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,86OPEN Bar,90饗喫鍋,89自助微波,91蒸玉米,96瓜地馬拉豆,97ANKER,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.095609, "lng": 120.71437, "district": "大里區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "111979", "name": "喬城", "address": "台中市大里區大智路567號", "tel": "(04)22809095", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,24雪淋霜霜淇淋,36精品咖啡,37天素地蔬,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,83蒸食機,89自助微波,91蒸玉米,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.123243, "lng": 120.690497, "district": "大里區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "210627", "name": "大里杙", "address": "台中市大里區大里路510號", "tel": "(04)24066409", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,19ibon,22現蒸地瓜,31博客來,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,81哈燒,86OPEN Bar,90饗喫鍋,91蒸玉米,93茶BAR(多元複合),A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.096792, "lng": 120.666199, "district": "大里區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "250360", "name": "大金", "address": "台中市大里區中興路一段255號", "tel": "(04)24964085", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,36精品咖啡,66冷凍交貨便,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.090991, "lng": 120.692078, "district": "大里區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "211860", "name": "愛心", "address": "台中市大里區愛心路43號", "tel": "(04)24068721", "hours": "24H", "services": "02廁所,03ATM,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,16美妝,19ibon,22現蒸地瓜,88酷聖石霜淇淋,27K·Seren,31博客來,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,18高效智慧回收機,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,91蒸玉米,93茶BAR(多元複合),A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.101364, "lng": 120.679881, "district": "大里區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "893345", "name": "新仁華", "address": "台中市大里區仁化路460.462號", "tel": "(04)24914732", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,36精品咖啡,66冷凍交貨便,17甜點專櫃,79精品威士忌咖啡,80霹靂DVD,83蒸食機,91蒸玉米,A2黃金滷蛋,A9BEAMS DESIGN專區,B6特選咖啡", "lat": 24.096106, "lng": 120.703476, "district": "大里區", "city": "台中市", "beams_tags": ["BEAMS DESIGN專區"]}, {"id": "980207", "name": "新堤", "address": "台中市大里區立德里甲堤南路71號", "tel": "(04)22759206", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,21現萃茶,22現蒸地瓜,24雪淋霜霜淇淋,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,83蒸食機,91蒸玉米,96瓜地馬拉豆,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.102948, "lng": 120.695345, "district": "大里區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "233435", "name": "東峰", "address": "台中市大里區大峰路429號", "tel": "(04)24967513", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,07OPEN! STORE,95藥商執照(快篩試劑),12行動電源租賃,19ibon,21現萃茶,22現蒸地瓜,31博客來,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,18高效智慧回收機,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,85ionex,87Watts均一價59元,90饗喫鍋,89自助微波,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.085668, "lng": 120.687551, "district": "大里區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "240606", "name": "瑞城", "address": "台中市大里區瑞城一街1號", "tel": "(04)24963006", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,07OPEN! STORE,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,22現蒸地瓜,29聖娜麵包,31博客來,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.085822, "lng": 120.701951, "district": "大里區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "874296", "name": "益民", "address": "台中市大里區東興里10鄰大明路238號", "tel": "(04)24815624", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,22現蒸地瓜,36精品咖啡,37天素地蔬,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,83蒸食機,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.115269, "lng": 120.683763, "district": "大里區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "228846", "name": "祥興", "address": "台中市大里區祥興路551號", "tel": "(04)22807828", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,31博客來,36精品咖啡,66冷凍交貨便,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,90饗喫鍋,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.117772, "lng": 120.681417, "district": "大里區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "890704", "name": "立新", "address": "台中市大里區立仁路142號", "tel": "(04)22798641", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,22現蒸地瓜,29聖娜麵包,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.107693, "lng": 120.703493, "district": "大里區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "285034", "name": "美群", "address": "台中市大里區美群路60號", "tel": "(04)24950645", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,07OPEN! STORE,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,22現蒸地瓜,31博客來,36精品咖啡,37天素地蔬,82天素地蔬複合店,66冷凍交貨便,08寵物生活專區,17甜點專櫃,18高效智慧回收機,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.085405, "lng": 120.70823, "district": "大里區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "257305", "name": "菩提", "address": "台中市大里區大明路66號.66之1號", "tel": "(04)24834429", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,22現蒸地瓜,31博客來,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,86OPEN Bar,90饗喫鍋,89自助微波,91蒸玉米,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.115417, "lng": 120.688225, "district": "大里區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "275990", "name": "蘋果", "address": "台中市大里區善化路155號", "tel": "(04)24913426", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,19ibon,21現萃茶,22現蒸地瓜,88酷聖石霜淇淋,36精品咖啡,66冷凍交貨便,08寵物生活專區,18高效智慧回收機,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,91蒸玉米,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.099004, "lng": 120.701996, "district": "大里區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "200022", "name": "軟體", "address": "台中市大里區東湖里中山路131號", "tel": "(04)24966941", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,21現萃茶,22現蒸地瓜,24雪淋霜霜淇淋,31博客來,36精品咖啡,37天素地蔬,82天素地蔬複合店,38嚴選素材冷凍鮮物,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,85ionex,87Watts均一價59元,90饗喫鍋,91蒸玉米,96瓜地馬拉豆,97ANKER,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.082413, "lng": 120.69428, "district": "大里區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "923307", "name": "光園", "address": "台中市東區東光園路142號", "tel": "(04)22800510", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,21現萃茶,22現蒸地瓜,31博客來,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,84gogoro,90饗喫鍋,91蒸玉米,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.127486, "lng": 120.694805, "district": "東區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "286303", "name": "富由", "address": "台中市東區自由路三段169-1號", "tel": "(04)22123831", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,36精品咖啡,37天素地蔬,66冷凍交貨便,17甜點專櫃,79精品威士忌咖啡,80霹靂DVD,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.142971, "lng": 120.690877, "district": "東區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "971742", "name": "東泓", "address": "台中市東區東門里東門路140號", "tel": "(04)22809073", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,18高效智慧回收機,78拋棄式隱形眼鏡,79精品威士忌咖啡,84gogoro,89自助微波,91蒸玉米,A2黃金滷蛋,A8BEAMS DESIGN,B4超值酒藏,B6特選咖啡", "lat": 24.12712, "lng": 120.69965, "district": "東區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "234830", "name": "樂寶", "address": "台中市東區進德路600號", "tel": "(04)22152674", "hours": "08:00 ~ 23:59", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,21現萃茶,22現蒸地瓜,88酷聖石霜淇淋,36精品咖啡,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,33OPEN iECO循環杯,79精品威士忌咖啡,81哈燒,86OPEN Bar,87Watts均一價59元,89自助微波,97ANKER,A1所長茶葉蛋,A2黃金滷蛋,A9BEAMS DESIGN專區,B2開心食堂,B3精品秤重散糖,B6特選咖啡", "lat": 24.135405, "lng": 120.692424, "district": "東區", "city": "台中市", "beams_tags": ["BEAMS DESIGN專區"]}, {"id": "110172", "name": "樂東", "address": "台中市東區東英路331號", "tel": "(04)22139547", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,19ibon,21現萃茶,22現蒸地瓜,36精品咖啡,82天素地蔬複合店,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,91蒸玉米,A2黃金滷蛋,A8BEAMS DESIGN,B4超值酒藏,B6特選咖啡", "lat": 24.137464, "lng": 120.704995, "district": "東區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "195184", "name": "漢展", "address": "台中市東區自由路四段436號", "tel": "(04)22137848", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,21現萃茶,36精品咖啡,66冷凍交貨便,79精品威士忌咖啡,80霹靂DVD,89自助微波,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.142564, "lng": 120.708833, "district": "東區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "230595", "name": "立和", "address": "台中市東區立德街47、49、51、53號", "tel": "(04)22244209", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,07OPEN! STORE,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,19ibon,21現萃茶,22現蒸地瓜,31博客來,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,79精品威士忌咖啡,80霹靂DVD,83蒸食機,86OPEN Bar,90饗喫鍋,89自助微波,91蒸玉米,97ANKER,A2黃金滷蛋,A9BEAMS DESIGN專區,B6特選咖啡", "lat": 24.134407, "lng": 120.686659, "district": "東區", "city": "台中市", "beams_tags": ["BEAMS DESIGN專區"]}, {"id": "229850", "name": "鑫建德", "address": "台中市東區建德街174.176.178.180號", "tel": "(04)22800902", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,07OPEN! STORE,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,16美妝,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,27K·Seren,29聖娜麵包,31博客來,36精品咖啡,37天素地蔬,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,18高效智慧回收機,33OPEN iECO循環杯,79精品威士忌咖啡,80霹靂DVD,86OPEN Bar,87Watts均一價59元,90饗喫鍋,89自助微波,91蒸玉米,93茶BAR(多元複合),A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.12952, "lng": 120.69197, "district": "東區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "285953", "name": "中棲", "address": "台中市沙鹿區台灣大道七段259號1樓", "tel": "(04)26324033", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,16美妝,15Mister Donut甜甜圈,19ibon,21現萃茶,22現蒸地瓜,24雪淋霜霜淇淋,31博客來,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,97ANKER,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.226803, "lng": 120.575763, "district": "沙鹿區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "207159", "name": "北忠", "address": "台中市沙鹿區北勢東路806號", "tel": "(04)26311091", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,13生鮮蔬菜,19ibon,22現蒸地瓜,36精品咖啡,37天素地蔬,38嚴選素材冷凍鮮物,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,94EC自助取件,A2黃金滷蛋,A8BEAMS DESIGN,B4超值酒藏,B6特選咖啡", "lat": 24.229834, "lng": 120.570078, "district": "沙鹿區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "208288", "name": "大晉", "address": "台中市沙鹿區東晉路133號", "tel": "(04)26314750", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,16美妝,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,27K·Seren,36精品咖啡,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,79精品威士忌咖啡,90饗喫鍋,91蒸玉米,93茶BAR(多元複合),A2黃金滷蛋,A8BEAMS DESIGN,B3精品秤重散糖,B6特選咖啡", "lat": 24.222334, "lng": 120.57301, "district": "沙鹿區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "126720", "name": "天仁", "address": "台中市沙鹿區斗抵里沙田路17之19號", "tel": "(04)26361763", "hours": "24H", "services": "01停車場,02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,21現萃茶,22現蒸地瓜,36精品咖啡,66冷凍交貨便,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,90饗喫鍋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.222349, "lng": 120.556396, "district": "沙鹿區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "208107", "name": "弘大", "address": "台中市沙鹿區晉武路9號", "tel": "(04)26315409", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,31博客來,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,83蒸食機,90饗喫鍋,97ANKER,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.222057, "lng": 120.580317, "district": "沙鹿區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "283072", "name": "東毓", "address": "台中市沙鹿區北勢東路507之8號9號", "tel": "(04)26318451", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,07OPEN! STORE,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,22現蒸地瓜,24雪淋霜霜淇淋,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,83蒸食機,89自助微波,94EC自助取件,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.224433, "lng": 120.576522, "district": "沙鹿區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "256346", "name": "正德", "address": "台中市沙鹿區正德路120巷90號", "tel": "(04)26310729", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,12行動電源租賃,19ibon,21現萃茶,22現蒸地瓜,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,80霹靂DVD,90饗喫鍋,89自助微波,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.204192, "lng": 120.570517, "district": "沙鹿區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "274218", "name": "祐瑄", "address": "台中市沙鹿區光華路502號506號", "tel": "(04)26629437", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,22現蒸地瓜,36精品咖啡,37天素地蔬,66冷凍交貨便,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,84gogoro,90饗喫鍋,89自助微波,94EC自助取件,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.2438, "lng": 120.570242, "district": "沙鹿區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "242956", "name": "築林", "address": "台中市沙鹿區中山路98號", "tel": "(04)26622549", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,15Mister Donut甜甜圈,19ibon,22現蒸地瓜,27K·Seren,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,87Watts均一價59元,90饗喫鍋,89自助微波,92現烤地瓜,91蒸玉米,94EC自助取件,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.238138, "lng": 120.570843, "district": "沙鹿區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "249038", "name": "鎮揚", "address": "台中市沙鹿區南陽路439號", "tel": "(04)26521648", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,21現萃茶,29聖娜麵包,36精品咖啡,37天素地蔬,66冷凍交貨便,79精品威士忌咖啡,80霹靂DVD,83蒸食機,89自助微波,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.216361, "lng": 120.570968, "district": "沙鹿區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "282817", "name": "鹿福", "address": "台中市沙鹿區光大路99號", "tel": "(04)26624876", "hours": "06:00 ~ 23:59", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,16美妝,19ibon,22現蒸地瓜,27K·Seren,31博客來,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,80霹靂DVD,89自助微波,94EC自助取件,A1所長茶葉蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.244591, "lng": 120.564735, "district": "沙鹿區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "275277", "name": "鹿興", "address": "台中市沙鹿區向上路七段1號", "tel": "(04)26368423", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,21現萃茶,22現蒸地瓜,24雪淋霜霜淇淋,27K·Seren,36精品咖啡,82天素地蔬複合店,66冷凍交貨便,08寵物生活專區,17甜點專櫃,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,94EC自助取件,A1所長茶葉蛋,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.203517, "lng": 120.567014, "district": "沙鹿區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "253107", "name": "佳茂", "address": "台中市潭子區中山路一段17號1樓", "tel": "(04)25346907", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,36精品咖啡,66冷凍交貨便,08寵物生活專區,79精品威士忌咖啡,90饗喫鍋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.190462, "lng": 120.702328, "district": "潭子區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "241182", "name": "大鋒", "address": "台中市潭子區大豐一路439號1樓", "tel": "(04)25349870", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,13生鮮蔬菜,19ibon,22現蒸地瓜,31博客來,36精品咖啡,37天素地蔬,82天素地蔬複合店,38嚴選素材冷凍鮮物,39原賞熱壓土司,66冷凍交貨便,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,91蒸玉米,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.207531, "lng": 120.681246, "district": "潭子區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "893046", "name": "榮晉", "address": "台中市潭子區頭張路二段2號", "tel": "(04)25359250", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,22現蒸地瓜,36精品咖啡,66冷凍交貨便,17甜點專櫃,79精品威士忌咖啡,80霹靂DVD,89自助微波,94EC自助取件,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.194704, "lng": 120.697878, "district": "潭子區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "280693", "name": "潭子勝利", "address": "台中市潭子區勝利路185號", "tel": "(04)25343275", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.211125, "lng": 120.700555, "district": "潭子區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "282002", "name": "潭德", "address": "台中市潭子區崇德路五段489號", "tel": "(04)25343039", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,21現萃茶,22現蒸地瓜,24雪淋霜霜淇淋,36精品咖啡,37天素地蔬,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,90饗喫鍋,94EC自助取件,A9BEAMS DESIGN專區,B6特選咖啡", "lat": 24.225095, "lng": 120.689978, "district": "潭子區", "city": "台中市", "beams_tags": ["BEAMS DESIGN專區"]}, {"id": "253923", "name": "潭興", "address": "台中市潭子區豐興路一段591、593、595號1樓", "tel": "(04)25392368", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,19ibon,22現蒸地瓜,31博客來,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,91蒸玉米,94EC自助取件,97ANKER,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.20392, "lng": 120.722374, "district": "潭子區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "195933", "name": "三和", "address": "台中市烏日區三榮路一段558號", "tel": "(04)23363462", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,13生鮮蔬菜,19ibon,21現萃茶,22現蒸地瓜,31博客來,36精品咖啡,37天素地蔬,38嚴選素材冷凍鮮物,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,91蒸玉米,94EC自助取件,96瓜地馬拉豆,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.107267, "lng": 120.602327, "district": "烏日區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "242989", "name": "九張犁", "address": "台中市烏日區中華路168號", "tel": "(04)23371629", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,19ibon,22現蒸地瓜,31博客來,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,80霹靂DVD,89自助微波,91蒸玉米,94EC自助取件,96瓜地馬拉豆,A1所長茶葉蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.112494, "lng": 120.640648, "district": "烏日區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "254410", "name": "僑隆興", "address": "台中市烏日區中山路三段180號", "tel": "(04)23387367", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,07OPEN! STORE,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,16美妝,19ibon,22現蒸地瓜,27K·Seren,31博客來,36精品咖啡,66冷凍交貨便,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,86OPEN Bar,87Watts均一價59元,97ANKER,A8BEAMS DESIGN,B4超值酒藏,B6特選咖啡", "lat": 24.108305, "lng": 120.608546, "district": "烏日區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "187080", "name": "元宏", "address": "台中市烏日區溪南路一段722號", "tel": "(04)23357738", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,22現蒸地瓜,31博客來,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,79精品威士忌咖啡,80霹靂DVD,81哈燒,83蒸食機,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,96瓜地馬拉豆,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.07492, "lng": 120.642671, "district": "烏日區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "243638", "name": "兆泓", "address": "台中市烏日區學田路446號", "tel": "(04)23371465", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,22現蒸地瓜,31博客來,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,86OPEN Bar,87Watts均一價59元,89自助微波,94EC自助取件,96瓜地馬拉豆,93茶BAR(多元複合),A2黃金滷蛋,A8BEAMS DESIGN,B4超值酒藏,B6特選咖啡", "lat": 24.120141, "lng": 120.607928, "district": "烏日區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "266376", "name": "吉宏", "address": "台中市烏日區九德里20鄰中華路593號", "tel": "(04)23387989", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,21現萃茶,22現蒸地瓜,31博客來,36精品咖啡,37天素地蔬,82天素地蔬複合店,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,94EC自助取件,A1所長茶葉蛋,A2黃金滷蛋,A8BEAMS DESIGN,B1野獸國專櫃,B6特選咖啡", "lat": 24.107236, "lng": 120.634185, "district": "烏日區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "229126", "name": "園臻", "address": "台中市烏日區三榮路一段111號", "tel": "(04)23370548", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),11千禧血壓站,12行動電源租賃,16美妝,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,27K·Seren,31博客來,36精品咖啡,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,87Watts均一價59元,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,97ANKER,A1所長茶葉蛋,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.105723, "lng": 120.609385, "district": "烏日區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "179621", "name": "太明", "address": "台中市烏日區太明路136號", "tel": "(04)23356899", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,21現萃茶,22現蒸地瓜,29聖娜麵包,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,83蒸食機,96瓜地馬拉豆,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.057598, "lng": 120.656908, "district": "烏日區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "206798", "name": "建日", "address": "台中市烏日區建國路419號", "tel": "(04)23372748", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,31博客來,36精品咖啡,38嚴選素材冷凍鮮物,39原賞熱壓土司,66冷凍交貨便,79精品威士忌咖啡,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.109244, "lng": 120.629285, "district": "烏日區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "230078", "name": "成功嶺", "address": "台中市烏日區榮和路230號", "tel": "(04)23373417", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,13生鮮蔬菜,16美妝,19ibon,21現萃茶,22現蒸地瓜,24雪淋霜霜淇淋,27K·Seren,31博客來,36精品咖啡,82天素地蔬複合店,38嚴選素材冷凍鮮物,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,85ionex,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,96瓜地馬拉豆,97ANKER,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.110967, "lng": 120.598426, "district": "烏日區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "258010", "name": "戰車", "address": "台中市烏日區新興路461號", "tel": "(04)23372635", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,19ibon,22現蒸地瓜,36精品咖啡,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,87Watts均一價59元,90饗喫鍋,89自助微波,91蒸玉米,96瓜地馬拉豆,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.105387, "lng": 120.616811, "district": "烏日區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "241687", "name": "東園", "address": "台中市烏日區溪埧里溪南路一段413號", "tel": "(04)23352449", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,21現萃茶,22現蒸地瓜,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,97ANKER,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.078313, "lng": 120.643444, "district": "烏日區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "182432", "name": "榮田", "address": "台中市烏日區三榮路二段199號", "tel": "(04)23362440", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,13生鮮蔬菜,19ibon,21現萃茶,22現蒸地瓜,29聖娜麵包,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,96瓜地馬拉豆,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.108294, "lng": 120.597058, "district": "烏日區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "214939", "name": "烏日", "address": "台中市烏日區新興路247號", "tel": "(04)23362682", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,22現蒸地瓜,31博客來,36精品咖啡,37天素地蔬,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,84gogoro,91蒸玉米,94EC自助取件,97ANKER,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.103965, "lng": 120.625345, "district": "烏日區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "230333", "name": "站前", "address": "台中市烏日區站區二路181號、183號", "tel": "(04)23384012", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,07OPEN! STORE,95藥商執照(快篩試劑),12行動電源租賃,19ibon,21現萃茶,22現蒸地瓜,31博客來,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,91蒸玉米,94EC自助取件,97ANKER,A1所長茶葉蛋,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.114215, "lng": 120.61544, "district": "烏日區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "229012", "name": "興祥", "address": "台中市烏日區興祥街189號", "tel": "(04)23384983", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,16美妝,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,27K·Seren,31博客來,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,18高效智慧回收機,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,94EC自助取件,A1所長茶葉蛋,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.109883, "lng": 120.637021, "district": "烏日區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "214652", "name": "三中", "address": "台中市西區忠明路54-1號1樓、博館路231號233號235號237號1樓", "tel": "(04)23146826", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,16美妝,19ibon,21現萃茶,22現蒸地瓜,27K·Seren,31博客來,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,84gogoro,90饗喫鍋,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.158985, "lng": 120.661106, "district": "西區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "293149", "name": "上誠", "address": "台中市西區向上路一段381號383號385號", "tel": "(04)24739542", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,19ibon,22現蒸地瓜,31博客來,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,79精品威士忌咖啡,80霹靂DVD,85ionex,86OPEN Bar,90饗喫鍋,A1所長茶葉蛋,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.146554, "lng": 120.65544, "district": "西區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "217422", "name": "五權", "address": "台中市西區南屯路一段60號62號64號", "tel": "(04)23759066", "hours": "06:00 ~ 23:59", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,36精品咖啡,66冷凍交貨便,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,89自助微波,94EC自助取件,A1所長茶葉蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.132374, "lng": 120.665849, "district": "西區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "962715", "name": "台麗", "address": "台中市西區五權路119號1樓、中山路493號1樓", "tel": "(04)22060119", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,21現萃茶,22現蒸地瓜,31博客來,36精品咖啡,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,83蒸食機,90饗喫鍋,94EC自助取件,97ANKER,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.146965, "lng": 120.672556, "district": "西區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "158288", "name": "吉龍", "address": "台中市西區吉龍里忠明南路410號1樓及五權七街200、202號1樓", "tel": "(04)23754680", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,07OPEN! STORE,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,16美妝,19ibon,22現蒸地瓜,36精品咖啡,37天素地蔬,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,91蒸玉米,96瓜地馬拉豆,A2黃金滷蛋,A8BEAMS DESIGN,B4超值酒藏,B6特選咖啡", "lat": 24.135248, "lng": 120.657075, "district": "西區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "286738", "name": "向美", "address": "台中市西區美村路一段302之1號302之7號", "tel": "(04)23016027", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,22現蒸地瓜,36精品咖啡,66冷凍交貨便,08寵物生活專區,33OPEN iECO循環杯,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.146253, "lng": 120.661532, "district": "西區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "185958", "name": "大將作", "address": "台中市西區英才路410號", "tel": "(04)23205843", "hours": "06:00 ~ 23:59", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,21現萃茶,22現蒸地瓜,36精品咖啡,37天素地蔬,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,81哈燒,83蒸食機,89自助微波,91蒸玉米,96瓜地馬拉豆,97ANKER,A1所長茶葉蛋,A9BEAMS DESIGN專區,B2開心食堂,B6特選咖啡", "lat": 24.152798, "lng": 120.666275, "district": "西區", "city": "台中市", "beams_tags": ["BEAMS DESIGN專區"]}, {"id": "277549", "name": "大莊園", "address": "台中市西區向上路一段15號1樓", "tel": "(04)23019946", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,16美妝,19ibon,22現蒸地瓜,27K·Seren,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,33OPEN iECO循環杯,79精品威士忌咖啡,80霹靂DVD,86OPEN Bar,90饗喫鍋,89自助微波,91蒸玉米,97ANKER,93茶BAR(多元複合),A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.146425, "lng": 120.66914, "district": "西區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "265306", "name": "安龍", "address": "台中市西區五權路2-12號2-13號1樓", "tel": "(04)23752146", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,31博客來,36精品咖啡,66冷凍交貨便,34CITY系列熱燕麥飲,79精品威士忌咖啡,90饗喫鍋,96瓜地馬拉豆,97ANKER,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.142356, "lng": 120.668292, "district": "西區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "238430", "name": "市民", "address": "台中市西區公益路157號", "tel": "(04)23020614", "hours": "24H", "services": "03ATM,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,16美妝,19ibon,36精品咖啡,79精品威士忌咖啡,80霹靂DVD,A1所長茶葉蛋,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.150724, "lng": 120.662807, "district": "西區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "240662", "name": "忠明義", "address": "台中市西區忠明南路16號16之1號18號1樓", "tel": "(04)23269542", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,06思樂冰,19ibon,22現蒸地瓜,31博客來,36精品咖啡,37天素地蔬,82天素地蔬複合店,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,33OPEN iECO循環杯,78拋棄式隱形眼鏡,79精品威士忌咖啡,86OPEN Bar,90饗喫鍋,89自助微波,94EC自助取件,93茶BAR(多元複合),A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.15624, "lng": 120.658681, "district": "西區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "912732", "name": "模範", "address": "台中市西區模範街34巷1號", "tel": "(04)23024571", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,13生鮮蔬菜,16美妝,19ibon,21現萃茶,22現蒸地瓜,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,90饗喫鍋,89自助微波,91蒸玉米,96瓜地馬拉豆,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.149128, "lng": 120.666726, "district": "西區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "216902", "name": "權大", "address": "台中市西區五權西路一段271號1樓2樓", "tel": "(04)23780449", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,22現蒸地瓜,36精品咖啡,79精品威士忌咖啡,80霹靂DVD,83蒸食機,89自助微波,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.13989, "lng": 120.655534, "district": "西區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "187079", "name": "權美", "address": "台中市西區美村路一段736號", "tel": "(04)23723672", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,13生鮮蔬菜,16美妝,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,36精品咖啡,37天素地蔬,82天素地蔬複合店,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,17甜點專櫃,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,81哈燒,83蒸食機,90饗喫鍋,91蒸玉米,94EC自助取件,96瓜地馬拉豆,A2黃金滷蛋,A8BEAMS DESIGN,B4超值酒藏,B6特選咖啡", "lat": 24.134218, "lng": 120.661585, "district": "西區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "279648", "name": "益風", "address": "台中市西區精誠路107號", "tel": "(04)23202817", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,19ibon,22現蒸地瓜,24雪淋霜霜淇淋,29聖娜麵包,36精品咖啡,66冷凍交貨便,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,91蒸玉米,96瓜地馬拉豆,A2黃金滷蛋,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.150492, "lng": 120.655227, "district": "西區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "285126", "name": "美村", "address": "台中市西區美村路一段542號546號", "tel": "(04)23762435", "hours": "24H", "services": "03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,13生鮮蔬菜,19ibon,22現蒸地瓜,31博客來,36精品咖啡,39原賞熱壓土司,66冷凍交貨便,08寵物生活專區,78拋棄式隱形眼鏡,79精品威士忌咖啡,80霹靂DVD,86OPEN Bar,90饗喫鍋,89自助微波,91蒸玉米,A8BEAMS DESIGN,B6特選咖啡", "lat": 24.139612, "lng": 120.661504, "district": "西區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}, {"id": "940483", "name": "金典", "address": "台中市西區健行路1046、1046-1、1046-2號1樓", "tel": "(04)23265492", "hours": "24H", "services": "02廁所,03ATM,04座位區,05ibon WiFi,95藥商執照(快篩試劑),12行動電源租賃,09OPEN! PLAZA專櫃,06思樂冰,13生鮮蔬菜,19ibon,21現萃茶,22現蒸地瓜,29聖娜麵包,31博客來,36精品咖啡,37天素地蔬,38嚴選素材冷凍鮮物,39原賞熱壓土司,66冷凍交貨便,17甜點專櫃,34CITY系列熱燕麥飲,78拋棄式隱形眼鏡,79精品威士忌咖啡,86OPEN Bar,90饗喫鍋,91蒸玉米,96瓜地馬拉豆,97ANKER,A2黃金滷蛋,A8BEAMS DESIGN,B3精品秤重散糖,B4超值酒藏,B6特選咖啡", "lat": 24.156473, "lng": 120.662996, "district": "西區", "city": "台中市", "beams_tags": ["BEAMS DESIGN"]}];
+    const map = L.map('map', { zoomControl: false }).setView([24.173, 120.645], 14);
+    L.control.zoom({ position: 'topright' }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    const markers = L.layerGroup().addTo(map);
+    let activeId = null;
+    let userPos = null;
+    let userMarker = null;
+
+    function googleUrl(s) {
+      return 'https://www.google.com/maps/dir/?api=1&destination=' +
+        encodeURIComponent(s.lat + ',' + s.lng) +
+        '&destination_place_id=&travelmode=walking';
+    }
+    function appleUrl(s) {
+      return 'https://maps.apple.com/?daddr=' + s.lat + ',' + s.lng +
+        '&q=' + encodeURIComponent('7-ELEVEN ' + s.name);
+    }
+    function kmBetween(a, b) {
+      const dlat = (a.lat - b.lat) * 111;
+      const dlng = (a.lng - b.lng) * 111 * Math.cos(a.lat * Math.PI / 180);
+      return Math.sqrt(dlat * dlat + dlng * dlng);
+    }
+    function fmtKm(km) {
+      if (km == null) return '';
+      return km < 1 ? Math.round(km * 1000) + ' m' : km.toFixed(1) + ' km';
+    }
+
+    const districtSel = document.getElementById('district');
+    const districts = ['西屯區', ...Array.from(new Set(STORES.map(s => s.district))).filter(d => d !== '西屯區').sort()];
+    districts.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d; opt.textContent = d;
+      if (d === '西屯區') opt.selected = true;
+      districtSel.appendChild(opt);
+    });
+    const allOpt = document.createElement('option');
+    allOpt.value = '__ALL__';
+    allOpt.textContent = '涵蓋區全部';
+    districtSel.appendChild(allOpt);
+
+    function filtered() {
+      const d = districtSel.value;
+      const q = document.getElementById('q').value.trim().toLowerCase();
+      let list = STORES.filter(s => {
+        if (d !== '__ALL__' && s.district !== d) return false;
+        if (!q) return true;
+        return (s.name + s.address + s.id).toLowerCase().includes(q);
+      }).map(s => {
+        const km = userPos ? kmBetween(userPos, s) : null;
+        return { ...s, km };
+      });
+      if (userPos) list.sort((a, b) => (a.km ?? 9e9) - (b.km ?? 9e9));
+      else list.sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
+      return list;
+    }
+
+    function render() {
+      const list = filtered();
+      document.getElementById('count').textContent = String(list.length);
+      markers.clearLayers();
+      const listEl = document.getElementById('list');
+      listEl.innerHTML = '';
+      if (!list.length) {
+        listEl.innerHTML = '<div class="empty">沒有符合的門市，換個關鍵字試試</div>';
+        return;
+      }
+
+      list.forEach(store => {
+        const isZone = (store.beams_tags || []).includes('BEAMS DESIGN專區');
+        const marker = L.circleMarker([store.lat, store.lng], {
+          radius: isZone ? 9 : 7,
+          color: '#0b3d2e',
+          weight: 2,
+          fillColor: isZone ? '#c45c26' : '#00704a',
+          fillOpacity: 0.92
+        });
+        marker.bindPopup(
+          '<strong>7-ELEVEN ' + store.name + '</strong><br>' +
+          store.address + '<br>店號 ' + store.id + '・' + (store.hours || '') + '<br>' +
+          (store.beams_tags || []).join('／') + '<br>' +
+          '<a href="' + googleUrl(store) + '" target="_blank" rel="noopener">Google 導航</a>　' +
+          '<a href="' + appleUrl(store) + '" target="_blank" rel="noopener">Apple 地圖</a>'
+        );
+        marker.on('click', () => selectStore(store.id, false));
+        markers.addLayer(marker);
+        store._marker = marker;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'card' + (store.id === activeId ? ' active' : '');
+        btn.innerHTML =
+          '<div class="card-top"><h3>7-11 ' + store.name +
+          (isZone ? '<span class="badge">專區</span>' : '') + '</h3>' +
+          (store.km != null ? '<div class="dist">' + fmtKm(store.km) + '</div>' : '') +
+          '</div>' +
+          '<p class="addr">' + store.address + '</p>' +
+          '<p class="tel">' + (store.tel || '') + (store.hours ? ' ・ ' + store.hours : '') + '</p>' +
+          '<div class="nav-row">' +
+          '<a class="g" href="' + googleUrl(store) + '" target="_blank" rel="noopener">Google 導航</a>' +
+          '<a class="a" href="' + appleUrl(store) + '" target="_blank" rel="noopener">Apple 地圖</a>' +
+          '</div>';
+        btn.querySelectorAll('a').forEach(a => a.addEventListener('click', e => e.stopPropagation()));
+        btn.addEventListener('click', () => selectStore(store.id, true));
+        listEl.appendChild(btn);
+      });
+
+      if (!activeId && list.length) {
+        const bounds = L.latLngBounds(list.map(s => [s.lat, s.lng]));
+        map.fitBounds(bounds.pad(0.14));
+      }
+      setTimeout(() => map.invalidateSize(), 80);
+    }
+
+    function selectStore(id, pan) {
+      activeId = id;
+      const store = filtered().find(s => s.id === id) || STORES.find(s => s.id === id);
+      render();
+      const live = filtered().find(s => s.id === id);
+      if (live && live._marker) live._marker.openPopup();
+      if (pan && store) {
+        map.setView([store.lat, store.lng], 17);
+        document.getElementById('sheet').classList.remove('expanded');
+        setTimeout(() => map.invalidateSize(), 220);
+      }
+    }
+
+    function locate() {
+      if (!navigator.geolocation) {
+        alert('此瀏覽器不支援定位');
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(pos => {
+        userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        if (userMarker) map.removeLayer(userMarker);
+        userMarker = L.marker([userPos.lat, userPos.lng], {
+          icon: L.divIcon({ className: '', html: '<div class="user-dot" style="width:14px;height:14px"></div>', iconSize: [14, 14], iconAnchor: [7, 7] })
+        }).addTo(map).bindPopup('你在這裡');
+        map.setView([userPos.lat, userPos.lng], 15);
+        activeId = null;
+        render();
+        const nearest = filtered()[0];
+        if (nearest) selectStore(nearest.id, true);
+      }, () => alert('無法取得定位，請在設定允許此網站使用定位'), {
+        enableHighAccuracy: true, timeout: 12000
+      });
+    }
+
+    document.getElementById('btnLocate').addEventListener('click', locate);
+    document.getElementById('fabLocate').addEventListener('click', locate);
+    document.getElementById('btnExpand').addEventListener('click', () => {
+      document.getElementById('sheet').classList.toggle('expanded');
+      setTimeout(() => map.invalidateSize(), 220);
+    });
+    document.getElementById('grab').addEventListener('click', () => {
+      document.getElementById('sheet').classList.toggle('expanded');
+      setTimeout(() => map.invalidateSize(), 220);
+    });
+    districtSel.addEventListener('change', () => { activeId = null; render(); });
+    document.getElementById('q').addEventListener('input', () => { activeId = null; render(); });
+    window.addEventListener('resize', () => map.invalidateSize());
+    render();
+  </script>
+</body>
+</html>
